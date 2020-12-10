@@ -15,23 +15,23 @@ impl CgmService {
     pub async fn add(&self, arg: &BgDTO) -> Result<u64> {
         let cgm = Cgm {
             id: Some(rbatis::plugin::snowflake::async_snowflake_id().await),
-            device: "".to_string(),
-            date: 0,
-            date_str: "".to_string(),
-            sgv: 0,
-            delta: 0.0,
-            direction: "".to_string(),
-            type1: "".to_string(),
-            filtered: None,
-            unfiltered: None,
-            rssi: None,
-            noise: None,
-            sys_time: None,
-            utc_offset: 0,
-            slope: 0.0,
-            intercept: 0.0,
-            scale: 0,
-            mbg: 0
+            device: arg.device.clone(),
+            date: arg.date,
+            date_str: arg.date_str.clone(),
+            sgv: arg.sgv,
+            delta: arg.delta,
+            direction: arg.direction.clone(),
+            type1: arg.type1.clone(),
+            filtered: arg.filtered,
+            unfiltered: arg.unfiltered,
+            rssi: arg.rssi,
+            noise: arg.noise,
+            sys_time: arg.sys_time,
+            utc_offset: arg.utc_offset,
+            slope: arg.slope,
+            intercept: arg.intercept,
+            scale: arg.scale,
+            mbg: arg.mbg
         };
         Ok(RB.save("", &cgm).await?.rows_affected)
     }
