@@ -6,8 +6,6 @@ use rbatis::core::Error;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 
-use crate::domain::domain::{SysRes, SysUser};
-
 
 /// http接口返回模型结构，提供基础的 code，msg，data 等json数据结构
 #[derive(Debug, Serialize, Deserialize, Clone)]

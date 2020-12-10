@@ -1,9 +1,8 @@
-use actix_web::{App, HttpResponse, HttpServer, Responder, web};
+use actix_web::{App, HttpResponse, HttpServer, Responder, web, ResponseError};
 
-use config::CONFIG;
-use controller::{cgm_controller};
-use dao::RB;
-use actix_web::ResponseError;
+use gluc::config::{log, CONFIG};
+use gluc::controller::{cgm_controller};
+use gluc::dao::RB;
 
 async fn index() -> impl Responder {
     HttpResponse::Ok().body("Hello cgm")
@@ -11,11 +10,10 @@ async fn index() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    //日志追加器
-    abs_admin::config::log::init_log();
-    //ORM
+    log::init_log();
+
     RB.link(&CONFIG.mysql_url).await.unwrap();
-    //路由
+
     HttpServer::new(|| {
         App::new()
             .route("/", web::get().to(index))
