@@ -37,9 +37,18 @@ impl CgmService {
         Ok(RB.save("", &cgm).await?.rows_affected)
     }
 
-    pub async fn list(&self, rr: i64) -> Result<Vec<Cgm>> {
 
-        let w = RB.new_wrapper().ge("date", rr).check()?;
-        return RB.list_by_wrapper("", &w).await;
+    pub async fn list(&self, ts: i64, cnt: i32) -> Result<Vec<BgDTO>> {
+
+        //let w = RB.new_wrapper().ge("date", rr).check()?;
+        //let ret: Result<Vec<Cgm>> = RB.list_by_wrapper("", &w).await;
+
+        #[py_sql(RB, "select * from cgm where date >= #{ts} limit #{cnt}")]
+        fn select_entries(ts: i64, cnt: i32) -> Result<Vec<Cgm>> {}
+
+        match select_entries(ts, cnt).await {
+            Ok(cgm) => Ok(cgm.iter().map(|x| x.into()).collect()),
+            Err(e) => Err(e)
+        }
     }
 }

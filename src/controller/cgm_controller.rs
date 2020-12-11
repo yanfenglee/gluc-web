@@ -1,6 +1,7 @@
 use actix_web::{Responder, web, get, post};
 use chrono::NaiveDateTime;
 use rbatis::core::value::DateTimeNow;
+use serde::Deserialize;
 
 use crate::domain::entity::{Cgm};
 use crate::domain::vo::RespVO;
@@ -16,12 +17,19 @@ pub async fn receiveBG(mut arg: web::Json<BgDTO>) -> impl Responder {
     RespVO::from_result(&data).resp()
 }
 
-#[get("/entries/{rr}")]
-pub async fn list(rr: web::Path<i64>) -> impl Responder {
 
-    log::info!("query entries {}", rr);
+#[derive(Debug, Deserialize)]
+struct Info {
+    count: i32,
+    rr: i64,
+}
 
-    let data = CGM_SERVICE.list(rr.into_inner()).await;
+#[get("/entries")]
+pub async fn list(info: web::Query<Info>) -> impl Responder {
+
+    log::info!("query entries {:?}", info);
+
+    let data = CGM_SERVICE.list(info.rr, info.count).await;
     RespVO::from_result(&data).resp()
 }
 
