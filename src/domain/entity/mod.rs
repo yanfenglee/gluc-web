@@ -22,5 +22,5 @@ pub struct Cgm {
     pub slope: f64,
     pub intercept: f64,
     pub scale: i32,
-    pub mbg: i32,
+    pub mbg: f64,
 }

@@ -17,7 +17,8 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
             .route("/", web::get().to(index))
-            .route("/entries", web::post().to(cgm_controller::receiveBG))
+            .service(cgm_controller::receiveBG)
+            .service(cgm_controller::list)
     })
         .bind(&CONFIG.server_url)?
         .run()
