@@ -6,10 +6,10 @@ debug: true
 server_name: "cgm"
 
 #server 地址
-server_url: "127.0.0.1:8000"
+server_url: "0.0.0.0:7777"
 
 #log 地址
 log_path: "requests.log"
 
 #mysql地址
-mysql_url: "mysql://root:123456@localhost:3306/test"
+mysql_url: "mysql://root:31415926@Pi@localhost:3306/gluc"

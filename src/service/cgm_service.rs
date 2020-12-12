@@ -43,7 +43,7 @@ impl CgmService {
         //let w = RB.new_wrapper().ge("date", rr).check()?;
         //let ret: Result<Vec<Cgm>> = RB.list_by_wrapper("", &w).await;
 
-        #[py_sql(RB, "select * from cgm where date >= #{ts} limit #{cnt}")]
+        #[py_sql(RB, "SELECT * FROM cgm WHERE date >= #{ts} LIMIT #{cnt}")]
         fn select_entries(ts: i64, cnt: i32) -> Vec<Cgm> {}
 
         // match select_entries(ts, cnt).await? {
