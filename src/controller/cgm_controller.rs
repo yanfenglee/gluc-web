@@ -20,7 +20,7 @@ pub async fn receiveBG(mut arg: web::Json<BgDTO>) -> impl Responder {
 
 #[derive(Debug, Deserialize)]
 struct Info {
-    count: i32,
+    count: i64,
     rr: i64,
 }
 

@@ -31,27 +31,23 @@ impl CgmService {
             utc_offset: arg.utcOffset,
             slope: arg.slope,
             intercept: arg.intercept,
-            scale: arg.scale,
+    scale: arg.scale,
             mbg: arg.mbg
         };
         Ok(RB.save("", &cgm).await?.rows_affected)
     }
 
 
-    pub async fn list(&self, ts: i64, cnt: i32) -> Result<Vec<BgDTO>> {
+    pub async fn list(&self, ts: i64, cnt: i64) -> Result<Vec<BgDTO>> {
 
         //let w = RB.new_wrapper().ge("date", rr).check()?;
         //let ret: Result<Vec<Cgm>> = RB.list_by_wrapper("", &w).await;
 
-        #[py_sql(RB, "SELECT * FROM cgm WHERE date >= #{ts} LIMIT #{cnt}")]
-        fn select_entries(ts: i64, cnt: i32) -> Vec<Cgm> {}
-
-        // match select_entries(ts, cnt).await? {
-        //     Some(cgm) => Ok(cgm.iter().map(|x| x.into()).collect()),
-        //     None => Ok(vec![])
-        // }
+        #[py_sql(RB, "SELECT * FROM cgm WHERE `date` > #{ts} LIMIT #{cc}")]
+        fn select_entries(ts: i64, cc: i64) -> Vec<Cgm> {}
 
         let cgms = select_entries(ts, cnt).await?;
+
         Ok(cgms.iter().map(|x| x.into()).collect())
     }
 }

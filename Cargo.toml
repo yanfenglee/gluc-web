@@ -9,8 +9,9 @@ edition = "2018"
 [dependencies]
 futures="0.3"
 #rbatis orm dep
-rbatis = { version = "1.8", default-features = false, features = ["actix-mysql","snowflake"] }
-rbatis-macro-driver = { version = "1.8", features = ["no_print"] }
+rbatis = { git = "https://github.com/yanfenglee/rbatis.git", branch = "master", package = "rbatis", default-features = false, features = ["actix-mysql","snowflake"] }
+# rbatis-macro-driver = { version = "1.8", features = ["no_print"] }
+rbatis-macro-driver = { git = "https://github.com/yanfenglee/rbatis.git", branch = "master", package = "rbatis-macro-driver"}
 
 #serde and base types
 serde = { version = "1.0", features = ["derive"] }
