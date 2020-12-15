@@ -10,8 +10,9 @@ use crate::domain::dto::BgDTO;
 
 
 /// receive bg
-#[post("/entries")]
-pub async fn receiveBG(mut arg: web::Json<BgDTO>) -> impl Responder {
+#[post("/api/v1/entries")]
+pub async fn receive_bg(arg: web::Json<Vec<BgDTO>>) -> impl Responder {
+    log::info!("receive bg: {:?}", arg);
 
     let data = CGM_SERVICE.add(&arg).await;
     RespVO::from_result(&data).resp()
@@ -24,7 +25,7 @@ struct Info {
     rr: i64,
 }
 
-#[get("/entries")]
+#[get("/api/v1/entries")]
 pub async fn list(info: web::Query<Info>) -> impl Responder {
 
     log::info!("query entries {:?}", info);
