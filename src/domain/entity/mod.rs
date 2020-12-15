@@ -24,3 +24,12 @@ pub struct Cgm {
     pub scale: Option<i32>,
     pub mbg: Option<f64>,
 }
+
+
+#[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
+pub struct DeviceStatus {
+    pub id: Option<i64>,
+    pub device: Option<String>,
+    pub battery: Option<i32>,
+    pub created_time: Option<NaiveDateTime>
+}

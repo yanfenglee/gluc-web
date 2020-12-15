@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use chrono::NaiveDateTime;
-use crate::domain::entity::Cgm;
+use crate::domain::entity::{Cgm, DeviceStatus};
+use rbatis::core::value::DateTimeNow;
 
 /// blood glucose dto
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -12,7 +13,7 @@ pub struct BgDTO {
     pub sgv: Option<i32>,
     pub delta: Option<f32>,
     pub direction: Option<String>,
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     pub type1: Option<String>,
     pub filtered: Option<f64>,
     pub unfiltered: Option<f64>,
@@ -46,7 +47,7 @@ impl From<&Cgm> for BgDTO {
             slope: arg.slope,
             intercept: arg.intercept,
             scale: arg.scale,
-            mbg: arg.mbg
+            mbg: arg.mbg,
         }
     }
 }
@@ -71,7 +72,40 @@ impl From<&BgDTO> for Cgm {
             slope: arg.slope,
             intercept: arg.intercept,
             scale: arg.scale,
-            mbg: arg.mbg
+            mbg: arg.mbg,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Uploader {
+    pub battery: Option<i32>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct DeviceStatusDTO {
+    pub id: Option<i64>,
+    pub device: Option<String>,
+    pub uploader: Uploader,
+}
+
+impl From<&DeviceStatusDTO> for DeviceStatus {
+    fn from(dto: &DeviceStatusDTO) -> Self {
+        DeviceStatus {
+            id: Some(rbatis::plugin::snowflake::block_snowflake_id()),
+            device: dto.device.clone(),
+            battery: dto.uploader.battery,
+            created_time: Some(NaiveDateTime::now()),
+        }
+    }
+}
+
+impl From<&DeviceStatus> for DeviceStatusDTO {
+    fn from(arg: &DeviceStatus) -> Self {
+        DeviceStatusDTO {
+            id: arg.id,
+            device: dto.device.clone(),
+            uploader: Uploader { battery: arg.battery },
         }
     }
 }
