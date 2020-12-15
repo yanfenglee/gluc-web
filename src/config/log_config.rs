@@ -16,7 +16,7 @@ pub fn init_log() {
     //自定义日志过滤
     fast_log::init_custom_log(appenders,
                               1000,
-                              log::Level::Debug,
+                              if CONFIG.debug {log::Level::Debug} else {log::Level::Info},
                               Box::new(ModuleFilter::new_exclude(vec!["sqlx".to_string()])),
     );
 }
