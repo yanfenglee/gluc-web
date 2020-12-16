@@ -104,7 +104,7 @@ impl From<&DeviceStatus> for DeviceStatusDTO {
     fn from(arg: &DeviceStatus) -> Self {
         DeviceStatusDTO {
             id: arg.id,
-            device: dto.device.clone(),
+            device: arg.device.clone(),
             uploader: Uploader { battery: arg.battery },
         }
     }
