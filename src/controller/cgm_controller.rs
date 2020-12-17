@@ -7,6 +7,7 @@ use crate::domain::entity::{Cgm};
 use crate::domain::vo::RespVO;
 use crate::service::CGM_SERVICE;
 use crate::domain::dto::BgDTO;
+use rbatis::core::Error;
 
 
 /// receive bg
@@ -26,7 +27,7 @@ struct Info {
 }
 
 #[get("/api/v1/entries.json")]
-pub async fn list(info: web::Query<Info>) -> impl Responder {
+pub async fn get_bg(info: web::Query<Info>) -> impl Responder {
 
     log::info!("query entries {:?}", info);
 
@@ -48,6 +49,13 @@ pub async fn list_device_status(info: web::Query<Info>) -> impl Responder {
     log::info!("query entries {:?}", info);
 
     let data = CGM_SERVICE.list(info.rr, info.count).await;
+    RespVO::from_result(&data).resp()
+}
+
+#[get("/api/v1/treatments")]
+pub async fn get_treatments() -> impl Responder {
+
+    let data: Result<Vec<i32>, Error> = Ok(vec![]);
     RespVO::from_result(&data).resp()
 }
 
