@@ -8,6 +8,20 @@ use crate::domain::vo::RespVO;
 use crate::service::CGM_SERVICE;
 use crate::domain::dto::BgDTO;
 use rbatis::core::Error;
+use crate::middleware::user::User;
+use crate::middleware::auth;
+
+/// config route service
+pub fn config(cfg: &mut web::ServiceConfig) {
+    cfg.service(web::scope("/cgm")
+        .wrap(auth::UserAuth)
+        .service(receive_bg)
+        .service(get_bg)
+        .service(device_status)
+        .service(list_device_status)
+        .service(get_treatments)
+    );
+}
 
 
 /// receive bg
@@ -27,9 +41,8 @@ struct Info {
 }
 
 #[get("/api/v1/entries.json")]
-pub async fn get_bg(info: web::Query<Info>) -> impl Responder {
-
-    log::info!("query entries {:?}", info);
+pub async fn get_bg(user: Option<User>, info: web::Query<Info>) -> impl Responder {
+    log::info!("query entries {:?}, {:?}", user, info);
 
     let data = CGM_SERVICE.list(info.rr, info.count).await;
     RespVO::from_result(&data).resp()
@@ -45,7 +58,6 @@ pub async fn device_status(arg: web::Json<Vec<BgDTO>>) -> impl Responder {
 
 #[get("/api/v1/devicestatus.json")]
 pub async fn list_device_status(info: web::Query<Info>) -> impl Responder {
-
     log::info!("query entries {:?}", info);
 
     let data = CGM_SERVICE.list(info.rr, info.count).await;
@@ -54,7 +66,6 @@ pub async fn list_device_status(info: web::Query<Info>) -> impl Responder {
 
 #[get("/api/v1/treatments")]
 pub async fn get_treatments() -> impl Responder {
-
     let data: Result<Vec<i32>, Error> = Ok(vec![]);
     RespVO::from_result(&data).resp()
 }
