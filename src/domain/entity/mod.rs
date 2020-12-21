@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
 pub struct Cgm {
     pub id: Option<i64>,
+    pub user_id: Option<i64>,
     pub device: Option<String>,
     pub date: Option<i64>,
     pub date_str: Option<String>,
@@ -29,6 +30,7 @@ pub struct Cgm {
 #[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
 pub struct DeviceStatus {
     pub id: Option<i64>,
+    pub user_id: Option<i64>,
     pub device: Option<String>,
     pub battery: Option<i32>,
     pub created_time: Option<NaiveDateTime>

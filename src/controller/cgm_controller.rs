@@ -8,12 +8,12 @@ use crate::domain::vo::RespVO;
 use crate::service::CGM_SERVICE;
 use crate::domain::dto::BgDTO;
 use rbatis::core::Error;
-use crate::middleware::user::User;
+use crate::middleware::auth_user::AuthUser;
 use crate::middleware::auth;
 
 /// config route service
 pub fn config(cfg: &mut web::ServiceConfig) {
-    cfg.service(web::scope("/cgm")
+    cfg.service(web::scope("/api/v1")
         .wrap(auth::UserAuth)
         .service(receive_bg)
         .service(get_bg)
@@ -25,46 +25,46 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 
 
 /// receive bg
-#[post("/api/v1/entries")]
-pub async fn receive_bg(arg: web::Json<Vec<BgDTO>>) -> impl Responder {
+#[post("/entries")]
+pub async fn receive_bg(user: Option<AuthUser>, arg: web::Json<Vec<BgDTO>>) -> impl Responder {
     log::info!("receive bg: {:?}", arg);
 
-    let data = CGM_SERVICE.add(&arg).await;
+    let data = CGM_SERVICE.add(&arg, user.unwrap().user_id).await;
     RespVO::from_result(&data).resp()
 }
 
 
 #[derive(Debug, Deserialize)]
-struct Info {
+pub struct Info {
     count: i64,
     rr: i64,
 }
 
-#[get("/api/v1/entries.json")]
-pub async fn get_bg(user: Option<User>, info: web::Query<Info>) -> impl Responder {
+#[get("/entries.json")]
+pub async fn get_bg(user: Option<AuthUser>, info: web::Query<Info>) -> impl Responder {
     log::info!("query entries {:?}, {:?}", user, info);
 
-    let data = CGM_SERVICE.list(info.rr, info.count).await;
+    let data = CGM_SERVICE.list(info.rr, info.count, user.unwrap().user_id).await;
     RespVO::from_result(&data).resp()
 }
 
-#[post("/api/v1/devicestatus")]
-pub async fn device_status(arg: web::Json<Vec<BgDTO>>) -> impl Responder {
+#[post("/devicestatus")]
+pub async fn device_status(user: Option<AuthUser>, arg: web::Json<Vec<BgDTO>>) -> impl Responder {
     log::info!("receive bg: {:?}", arg);
 
-    let data = CGM_SERVICE.add(&arg).await;
+    let data = CGM_SERVICE.add(&arg, user.unwrap().user_id).await;
     RespVO::from_result(&data).resp()
 }
 
-#[get("/api/v1/devicestatus.json")]
-pub async fn list_device_status(info: web::Query<Info>) -> impl Responder {
+#[get("/devicestatus.json")]
+pub async fn list_device_status(user: Option<AuthUser>, info: web::Query<Info>) -> impl Responder {
     log::info!("query entries {:?}", info);
 
-    let data = CGM_SERVICE.list(info.rr, info.count).await;
+    let data = CGM_SERVICE.list(info.rr, info.count, user.unwrap().user_id).await;
     RespVO::from_result(&data).resp()
 }
 
-#[get("/api/v1/treatments")]
+#[get("/treatments")]
 pub async fn get_treatments() -> impl Responder {
     let data: Result<Vec<i32>, Error> = Ok(vec![]);
     RespVO::from_result(&data).resp()

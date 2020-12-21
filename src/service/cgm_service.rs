@@ -14,22 +14,24 @@ use std::ops::Deref;
 pub struct CgmService {}
 
 impl CgmService {
-    pub async fn add(&self, arg: &Vec<BgDTO>) -> Result<u64> {
-        let entries: Vec<Cgm> = arg.iter().map(|item| item.into()).collect();
+    pub async fn add(&self, arg: &Vec<BgDTO>, user_id: i64) -> Result<u64> {
+        let entries: Vec<Cgm> = arg.iter().map(|item| {
+            let mut cgm: Cgm = item.into();
+            cgm.id = Some(rbatis::plugin::snowflake::block_snowflake_id());
+            cgm.user_id = Some(user_id);
+            cgm
+        }).collect();
 
         Ok(RB.save_batch("", &entries).await?.rows_affected)
     }
 
 
-    pub async fn list(&self, ts: i64, cnt: i64) -> Result<Vec<BgDTO>> {
+    pub async fn list(&self, ts: i64, cnt: i64, user_id: i64) -> Result<Vec<BgDTO>> {
 
-        //let w = RB.new_wrapper().ge("date", rr).check()?;
-        //let ret: Result<Vec<Cgm>> = RB.list_by_wrapper("", &w).await;
+        #[py_sql(RB, "SELECT * FROM cgm WHERE user_id = #{user_id} and `date` < #{ts} order by `date` desc LIMIT #{cc}")]
+        fn select_entries(user_id: i64, ts: i64, cc: i64) -> Vec<Cgm> {}
 
-        #[py_sql(RB, "SELECT * FROM cgm WHERE `date` < #{ts} order by `date` desc LIMIT #{cc}")]
-        fn select_entries(ts: i64, cc: i64) -> Vec<Cgm> {}
-
-        let cgms = select_entries(ts, cnt).await?;
+        let cgms = select_entries(user_id, ts, cnt).await?;
 
         Ok(cgms.iter().map(|x| x.into()).collect())
     }

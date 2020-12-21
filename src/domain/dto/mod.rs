@@ -55,7 +55,8 @@ impl From<&Cgm> for BgDTO {
 impl From<&BgDTO> for Cgm {
     fn from(arg: &BgDTO) -> Cgm {
         Cgm {
-            id: Some(rbatis::plugin::snowflake::block_snowflake_id()),
+            id: None,
+            user_id: None,
             device: arg.device.clone(),
             date: arg.date,
             date_str: arg.dateString.clone(),
@@ -93,6 +94,7 @@ impl From<&DeviceStatusDTO> for DeviceStatus {
     fn from(dto: &DeviceStatusDTO) -> Self {
         DeviceStatus {
             id: Some(rbatis::plugin::snowflake::block_snowflake_id()),
+            user_id: None,
             device: dto.device.clone(),
             battery: dto.uploader.battery,
             created_time: Some(NaiveDateTime::now()),

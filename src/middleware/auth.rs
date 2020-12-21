@@ -6,7 +6,7 @@ use futures::future::{ok, Ready, err};
 use futures::Future;
 use actix_web::dev::{Transform, Service};
 use actix_http::error;
-use crate::middleware::user::User;
+use crate::middleware::auth_user::AuthUser;
 
 // There are two steps in middleware processing.
 // 1. Middleware initialization, middleware factory gets called with
@@ -57,7 +57,7 @@ impl<S, B> Service for MyAuthMiddleware<S>
     fn call(&mut self, req: ServiceRequest) -> Self::Future {
         println!("Hi from start. You requested: {}", req.path());
 
-        if let Some(user) = User::from_header(req.headers()) {
+        if let Some(user) = AuthUser::from_header(req.headers()) {
 
             let fut = self.service.call(req);
 
