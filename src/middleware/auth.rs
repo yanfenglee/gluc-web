@@ -7,6 +7,8 @@ use futures::Future;
 use actix_web::dev::{Transform, Service};
 use actix_http::error;
 use crate::middleware::auth_user::AuthUser;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 // There are two steps in middleware processing.
 // 1. Middleware initialization, middleware factory gets called with
@@ -19,7 +21,7 @@ pub struct UserAuth;
 // `B` - type of response's body
 impl<S, B> Transform<S> for UserAuth
     where
-        S: Service<Request=ServiceRequest, Response=ServiceResponse<B>, Error=Error>,
+        S: Service<Request=ServiceRequest, Response=ServiceResponse<B>, Error=Error> + 'static,
         S::Future: 'static,
         B: 'static,
 {
@@ -31,17 +33,17 @@ impl<S, B> Transform<S> for UserAuth
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
-        ok(MyAuthMiddleware { service })
+        ok(MyAuthMiddleware { service: Rc::new(RefCell::new(service)) })
     }
 }
 
 pub struct MyAuthMiddleware<S> {
-    service: S,
+    service: Rc<RefCell<S>>,
 }
 
 impl<S, B> Service for MyAuthMiddleware<S>
     where
-        S: Service<Request=ServiceRequest, Response=ServiceResponse<B>, Error=Error>,
+        S: Service<Request=ServiceRequest, Response=ServiceResponse<B>, Error=Error> + 'static,
         S::Future: 'static,
         B: 'static,
 {
@@ -57,18 +59,23 @@ impl<S, B> Service for MyAuthMiddleware<S>
     fn call(&mut self, req: ServiceRequest) -> Self::Future {
         println!("Hi from start. You requested: {}", req.path());
 
-        if let Some(user) = AuthUser::from_header(req.headers()) {
+        let headers = req.headers().clone();
+        let mut service = self.service.clone();
 
-            let fut = self.service.call(req);
+        let ret = async move {
+            if let Some(user) = AuthUser::from_header(&headers).await {
 
-            return Box::pin(async move {
-                let res = fut.await?;
+                let res = service.call(req).await?;
 
                 println!("Hi from response");
-                Ok(res)
-            });
-        }
 
-        Box::pin(err(error::ErrorUnauthorized("err")))
+                Ok(res)
+            } else {
+                Err(error::ErrorUnauthorized("err"))
+            }
+        };
+
+        Box::pin(ret)
+
     }
 }
