@@ -11,9 +11,9 @@ use actix_web::guard::Guard;
 use std::ops::Deref;
 
 ///Cgm service
-pub struct CgmService {}
+pub struct UserService {}
 
-impl CgmService {
+impl UserService {
     pub async fn add(&self, arg: &Vec<BgDTO>, user_id: i64) -> Result<u64> {
         let entries: Vec<Cgm> = arg.iter().map(|item| {
             let mut cgm: Cgm = item.into();
