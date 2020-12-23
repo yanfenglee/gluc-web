@@ -29,9 +29,9 @@ impl AuthUser {
 
             /// get from db
             #[py_sql(RB, "SELECT id FROM users WHERE token = #{token} LIMIT 1")]
-            fn select_id(token: &str) -> Option<i64> {}
+            fn select_id(token: &String) -> Option<i64> {}
 
-            if let Ok(Some(id)) = select_id(token.as_str()).await {
+            if let Ok(Some(id)) = select_id(&token).await {
 
                 /// write cache
                 if let Ok(mut cc) = CACHE_I64.lock() {
