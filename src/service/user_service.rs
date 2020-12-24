@@ -8,12 +8,24 @@ use actix_web::guard::Guard;
 use std::ops::Deref;
 use crate::domain::vo::RespErr::SimpleError;
 use crate::domain::vo::Result;
+use crate::domain::entity::User;
 
 ///Cgm service
 pub struct UserService {}
 
 impl UserService {
     pub async fn register(&self, arg: &UserRegisterDTO) -> Result<String> {
+
+        //Ok(RB.save_batch("", &entries).await?.rows_affected)
+        let user = User {
+            id: rbatis::plugin::snowflake::block_snowflake_id(),
+            username: arg.username.clone(),
+            password: None,
+            nickname: None,
+            email: None,
+            phone: None,
+            token: None
+        };
 
         //Ok(RB.save_batch("", &entries).await?.rows_affected)
         Err(SimpleError("not implement".to_string()))
