@@ -3,13 +3,12 @@ use chrono::NaiveDateTime;
 use rbatis::core::value::DateTimeNow;
 use serde::Deserialize;
 
-use crate::domain::entity::{Cgm};
-use crate::domain::vo::RespVO;
-use crate::service::CGM_SERVICE;
-use crate::domain::dto::BgDTO;
-use rbatis::core::Error;
+use crate::domain::vo::resp;
+use crate::service::USER_SERVICE;
+use crate::domain::vo::Result;
 use crate::middleware::auth_user::AuthUser;
 use crate::middleware::auth;
+use crate::domain::dto::{UserRegisterDTO, UserLoginDTO};
 
 /// config route service
 pub fn config(cfg: &mut web::ServiceConfig) {
@@ -23,25 +22,25 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 
 
 #[post("/register")]
-pub async fn register(arg: web::Json<RegisterDTO>) -> impl Responder {
+pub async fn register(arg: web::Json<UserRegisterDTO>) -> impl Responder {
     log::info!("user register: {:?}", arg);
 
-    let data = CGM_SERVICE.add(&arg, user.unwrap().user_id).await;
-    RespVO::from_result(&data).resp()
+    let data = USER_SERVICE.register(&arg).await;
+    resp(&data)
 }
 
 #[post("/login")]
-pub async fn login(arg: web::Json<LoginDTO>) -> impl Responder {
+pub async fn login(arg: web::Json<UserLoginDTO>) -> impl Responder {
     log::info!("user login: {:?}", arg);
 
-    let data = CGM_SERVICE.add(&arg, user.unwrap().user_id).await;
-    RespVO::from_result(&data).resp()
+    let data = USER_SERVICE.login(&arg).await;
+    resp(&data)
 }
 
 #[get("/xdrip/config")]
 pub async fn xdrip_config(user: Option<AuthUser>) -> impl Responder {
-    log::info!("query entries {:?}, {:?}", user, info);
+    log::info!("query entries {:?}", user);
 
-    let data = CGM_SERVICE.list(info.rr, info.count, user.unwrap().user_id).await;
-    RespVO::from_result(&data).resp()
+    let data = USER_SERVICE.get_xdrip_cfg(user.unwrap().user_id).await;
+    resp(&data)
 }

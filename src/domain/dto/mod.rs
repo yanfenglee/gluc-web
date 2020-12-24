@@ -36,3 +36,9 @@ impl From<&UserRegisterDTO> for User {
         }
     }
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct XDripCfgDTO {
+    pub url: String,
+    pub app_type: String,
+}

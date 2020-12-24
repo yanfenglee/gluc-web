@@ -6,87 +6,62 @@ use rbatis::core::Error;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 
-
-/// http接口返回模型结构，提供基础的 code，msg，data 等json数据结构
+/// response struct
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RespVO<T> {
-    pub code: Option<String>,
+pub struct Resp<T> {
+    pub code: String,
     pub msg: Option<String>,
     pub data: Option<T>,
 }
 
-impl<T> RespVO<T> where T: Serialize + DeserializeOwned + Clone {
-    pub fn from_result(arg: &Result<T, Error>) -> Self {
-        if arg.is_ok() {
-            Self {
-                code: Some("SUCCESS".to_string()),
-                msg: None,
-                data: arg.clone().ok(),
-            }
-        } else {
-            Self {
-                code: Some("FAIL".to_string()),
-                msg: Some(arg.clone().err().unwrap().to_string()),
-                data: None,
-            }
-        }
-    }
-
-    pub fn from(arg: &T) -> Self {
-        Self {
-            code: Some("SUCCESS".to_string()),
-            msg: None,
-            data: Some(arg.clone()),
-        }
-    }
-
-    pub fn from_error(code: &str, arg: &Error) -> Self {
-        let mut code_str = code.to_string();
-        if code_str.is_empty() {
-            code_str = "FAIL".to_string();
-        }
-        Self {
-            code: Some(code_str),
-            msg: Some(arg.to_string()),
-            data: None,
-        }
-    }
-
-    pub fn from_error_info(code: &str, info: &str) -> Self {
-        let mut code_str = code.to_string();
-        if code_str.is_empty() {
-            code_str = "FAIL".to_string();
-        }
-        Self {
-            code: Some(code_str),
-            msg: Some(info.to_string()),
-            data: None,
-        }
-    }
-
-    pub fn resp_wrap(&self) -> Response {
-        return HttpResponse::Ok().content_type("json").body(self.to_string());
-    }
-
-    pub fn resp(&self) -> Response {
-        match self.data.as_ref() {
-            Some(data) => {
-                let data = serde_json::to_string(data).unwrap();
-                HttpResponse::Ok().content_type("json").body(data)
-            },
-            None => HttpResponse::Ok().content_type("json").body("[]")
-        }
-    }
-
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum RespErr {
+    SimpleError(String),
+    CodeError(String, String),
 }
 
-pub fn resp<T>(ret: &Result<T, Error>) -> Response where T: Serialize + DeserializeOwned + Clone {
-    let vo = RespVO::from_result(ret).resp();
-    vo
-}
+pub type Result<T> = std::result::Result<T, RespErr>;
 
-impl<T> ToString for RespVO<T> where T: Serialize + DeserializeOwned + Clone {
-    fn to_string(&self) -> String {
-        serde_json::to_string(self).unwrap()
-    }
+
+/// Returns Resp<T> json.
+///
+/// # Examples
+///
+/// Basic usage:
+///
+/// ```
+/// use gluc_web::domain::vo::resp;
+/// use gluc_web::domain::vo::RespErr::SimpleError;
+/// use gluc_web::domain::vo::RespErr::CodeError;
+///
+/// #[derive(Serialize, Deserialize, Clone, Debug)]
+/// pub struct UserDTO {
+///     pub username: String,
+///     pub password: String,
+/// }
+///
+/// let data = UserDTO {
+///     username: "xiaoming".into(),
+///     password: "123456".into,
+/// };
+///
+/// resp(&Ok(data));
+/// resp(&Err(SimpleError("服务器内部异常".into())));
+/// resp(&Err(CodeError("1001".into(), "账号未登录".into())));
+///
+/// ```
+pub fn resp<T>(arg: &Result<T>) -> Response where T: Serialize + DeserializeOwned + Clone {
+    let res = match arg {
+        Ok(data) => Resp { code: "0".into(), msg: None, data: Some(data) },
+        Err(e) => {
+            match e {
+                RespErr::SimpleError(e) => Resp { code: "1111".into(), msg: Some(e.clone()), data: None },
+                RespErr::CodeError(code, e) => Resp { code: code.clone(), msg: Some(e.clone()), data: None },
+            }
+        },
+    };
+
+    let json_str = serde_json::to_string(&res).unwrap();
+
+    HttpResponse::Ok().content_type("json").body(json_str)
 }

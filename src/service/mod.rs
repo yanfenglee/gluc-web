@@ -6,5 +6,5 @@ use crate::config::CONFIG;
 mod user_service;
 
 lazy_static! {
-   pub static ref CGM_SERVICE: UserService = UserService{};
+   pub static ref USER_SERVICE: UserService = UserService{};
 }
