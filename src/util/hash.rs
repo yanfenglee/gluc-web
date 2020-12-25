@@ -1,6 +1,7 @@
 use sha1::{Sha1, Digest};
+use core::fmt::Write;
 
-pub fn sha1(data: String) -> String {
+pub fn sha1(data: &String) -> String {
 
     // create a Sha1 object
     let mut sh = Sha1::default();
@@ -10,7 +11,12 @@ pub fn sha1(data: String) -> String {
 
     let output = &sh.result()[..];
 
-    format!("{:02x?}", output)
+    let mut hex_str = String::with_capacity(2 * output.len());
+    for byte in output {
+        write!(hex_str, "{:02x}", byte);
+    }
+
+    hex_str
 }
 
 #[cfg(test)]
@@ -24,7 +30,7 @@ mod test {
 
     #[test]
     fn test_sha1() {
-        let res = hash::sha1("hello world".into());
+        let res = hash::sha1(&"hello world".into());
         println!("{}", res);
     }
 }

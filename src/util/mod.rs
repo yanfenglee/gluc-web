@@ -1,2 +1,2 @@
 pub mod local_cache;
-mod hash;
+pub mod hash;

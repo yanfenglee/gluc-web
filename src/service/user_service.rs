@@ -9,6 +9,7 @@ use std::ops::Deref;
 use crate::domain::vo::RespErr::SimpleError;
 use crate::domain::vo::Result;
 use crate::domain::entity::User;
+use crate::util::hash;
 
 ///Cgm service
 pub struct UserService {}
@@ -20,11 +21,11 @@ impl UserService {
         let user = User {
             id: rbatis::plugin::snowflake::block_snowflake_id(),
             username: arg.username.clone(),
-            password: None,
-            nickname: None,
-            email: None,
-            phone: None,
-            token: None
+            password: Some(hash::sha1(&arg.password)),
+            nickname: arg.nickname.clone(),
+            email: arg.email.clone(),
+            phone: arg.phone.clone(),
+            token: Some(hash::sha1(&format!("{}_{}", arg.username, arg.password))),
         };
 
         //Ok(RB.save_batch("", &entries).await?.rows_affected)
