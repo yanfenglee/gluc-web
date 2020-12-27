@@ -5,6 +5,7 @@ use rbatis::crud::CRUDEnable;
 use rbatis::core::Error;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
+use crate::domain::vo::RespErr::SimpleError;
 
 /// response struct
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -18,6 +19,12 @@ pub struct Resp<T> {
 pub enum RespErr {
     SimpleError(String),
     CodeError(String, String),
+}
+
+impl From<Error> for RespErr {
+    fn from(e: Error) -> Self {
+        SimpleError(e.to_string())
+    }
 }
 
 pub type Result<T> = std::result::Result<T, RespErr>;

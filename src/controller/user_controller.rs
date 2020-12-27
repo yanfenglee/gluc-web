@@ -15,8 +15,11 @@ pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(web::scope("/user")
         .service(register)
         .service(login)
-        .wrap(auth::UserAuth)
-        .service(xdrip_config)
+        .service(web::scope("/")
+            .wrap(auth::UserAuth)
+            .service(xdrip_config))
+
+
     );
 }
 

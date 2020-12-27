@@ -11,5 +11,5 @@ pub struct User {
     pub nickname: Option<String>,
     pub email: Option<String>,
     pub phone: Option<String>,
-    pub token: Option<String>,
+    pub token: String,
 }

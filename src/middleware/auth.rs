@@ -71,7 +71,7 @@ impl<S, B> Service for MyAuthMiddleware<S>
 
                 Ok(res)
             } else {
-                Err(error::ErrorUnauthorized("err"))
+                Err(error::ErrorUnauthorized("auth failed!!!"))
             }
         };
 
