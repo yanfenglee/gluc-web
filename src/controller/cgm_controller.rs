@@ -10,6 +10,9 @@ use crate::middleware::auth_user::AuthUser;
 use crate::middleware::auth;
 use crate::domain::dto::{UserRegisterDTO, UserLoginDTO};
 use crate::view::index::Index;
+use crate::domain::entity::Cgm;
+use crate::dao::RB;
+use rbatis::crud::CRUD;
 
 /// config route service
 pub fn config(cfg: &mut web::ServiceConfig) {
@@ -23,15 +26,35 @@ pub fn config(cfg: &mut web::ServiceConfig) {
 pub async fn get_current(user: Option<AuthUser>) -> impl Responder {
     log::info!("query entries {:?}", user);
 
-    let val = "4.5";
-    let delta = "0.3";
-    let direction = "flat";
+    let user_id = user.unwrap().user_id;
 
-    let index = Index {
-        val,
-        delta,
-        direction,
-    };
+    //
+    // #[py_sql(RB, "SELECT * FROM cgm WHERE user_id = #{user_id} order by `date` desc LIMIT 1")]
+    // fn select_entries(user_id: i64) -> Option<Cgm> {}
+    //
+    // let cgm = select_entries(user.unwrap().user_id).await.unwrap().unwrap();
 
-    resp_html(index)
+    let wrapper = RB.new_wrapper()
+        .eq("user_id", user_id)
+        .order_by(false, &[&"date"])
+        .check().unwrap();
+
+    if let Ok(cgm) = RB.fetch_by_wrapper::<Cgm>("", &wrapper).await {
+
+        let index = Index {
+            val: cgm.sgv.unwrap().to_string(),
+            delta: cgm.delta.unwrap().to_string(),
+            direction: cgm.direction.unwrap(),
+        };
+
+        return resp_html(index);
+    } else {
+
+        return resp_html(Index {
+            val: "".to_string(),
+            delta: "".to_string(),
+            direction: "".to_string()
+        });
+    }
+
 }

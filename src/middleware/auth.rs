@@ -59,23 +59,25 @@ impl<S, B> Service for MyAuthMiddleware<S>
     fn call(&mut self, req: ServiceRequest) -> Self::Future {
         println!("Hi from start. You requested: {}", req.path());
 
-        let headers = req.headers().clone();
         let mut service = self.service.clone();
 
         let ret = async move {
-            if let Some(user) = AuthUser::from_header(&headers).await {
+            let (http_req, payload) = req.into_parts();
 
-                let res = service.call(req).await?;
+            if let Some(user) = AuthUser::from_request(&http_req).await {
+                if let Ok(req) = ServiceRequest::from_parts(http_req, payload) {
+                    let res = service.call(req).await?;
 
-                println!("Hi from response");
+                    println!("Hi from response");
 
-                Ok(res)
-            } else {
-                Err(error::ErrorUnauthorized("auth failed!!!"))
-            }
+                    return Ok(res);
+                }
+            };
+
+            return Err(error::ErrorUnauthorized("auth failed!!!"));
         };
 
-        Box::pin(ret)
 
+        Box::pin(ret)
     }
 }

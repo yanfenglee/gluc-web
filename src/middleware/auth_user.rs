@@ -8,6 +8,7 @@ use futures::{Future, FutureExt};
 
 use crate::util::local_cache::CACHE_I64;
 use crate::dao::RB;
+use qstring::QString;
 
 #[derive(Debug)]
 pub struct AuthUser {
@@ -27,7 +28,10 @@ impl AuthUser {
     }
 
     pub async fn from_request(req: &HttpRequest) -> Option<Self> {
-        if let Some(token) = req.match_info().get("token") {
+        let qs = QString::from(req.query_string());
+
+        if let Some(token) = qs.get("token") {
+            println!("from query string token: {}", token);
             return Self::from_token(&token.to_string()).await;
         } else {
             return Self::from_header(req.headers()).await;

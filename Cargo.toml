@@ -38,3 +38,5 @@ sha-1 = "0.7"
 # template
 sailfish = "0.3.0"
 sailfish-macros = "0.3.0"
+
+qstring = "0.7.2"

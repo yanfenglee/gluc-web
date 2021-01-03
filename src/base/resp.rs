@@ -94,9 +94,9 @@ mod test {
 
     #[test]
     fn test_html() {
-        let val = "4.5";
-        let delta = "0.3";
-        let direction = "flat";
+        let val = "4.5".to_string();
+        let delta = "0.3".to_string();
+        let direction = "flat".to_string();
 
         let index = Index {
             val,
