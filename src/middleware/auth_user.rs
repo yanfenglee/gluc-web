@@ -17,31 +17,44 @@ pub struct AuthUser {
 
 impl AuthUser {
     pub async fn from_header(headers: &HeaderMap) -> Option<Self> {
-        if let Some(header) = headers.get("api_secret") {
+        if let Some(header) = headers.get("token") {
             let token = header.to_str().unwrap().to_string();
 
-            /// get from local cache first
+            return Self::from_token(&token).await
+        }
+
+        None
+    }
+
+    pub async fn from_request(req: &HttpRequest) -> Option<Self> {
+        if let Some(token) = req.match_info().get("token") {
+            return Self::from_token(&token.to_string()).await;
+        } else {
+            return Self::from_header(req.headers()).await;
+        }
+    }
+
+    pub async fn from_token(token: &String) -> Option<Self> {
+        /// get from local cache first
+        if let Ok(mut cc) = CACHE_I64.lock() {
+            if let Some(id) = cc.get(token) {
+                return Some(AuthUser { user_id: *id, token: token.clone() });
+            }
+        }
+
+        /// get from db
+        #[py_sql(RB, "SELECT id FROM user WHERE token = #{token} LIMIT 1")]
+        fn select_id(token: &String) -> Option<i64> {}
+
+        if let Ok(Some(id)) = select_id(&token).await {
+            /// write cache
             if let Ok(mut cc) = CACHE_I64.lock() {
-                if let Some(id) = cc.get(&token) {
-                    return Some(AuthUser { user_id: *id, token });
-                }
+                cc.insert(token.clone(), id);
             }
 
-            /// get from db
-            #[py_sql(RB, "SELECT id FROM users WHERE token = #{token} LIMIT 1")]
-            fn select_id(token: &String) -> Option<i64> {}
+            log::info!("cache miss, get from db: {}", id);
 
-            if let Ok(Some(id)) = select_id(&token).await {
-
-                /// write cache
-                if let Ok(mut cc) = CACHE_I64.lock() {
-                    cc.insert(token.clone(), id);
-                }
-
-                log::info!("cache miss, get from db: {}", id);
-
-                return Some(AuthUser { user_id: id, token: token.clone() });
-            }
+            return Some(AuthUser { user_id: id, token: token.clone() });
         }
 
         None
@@ -57,10 +70,11 @@ impl FromRequest for AuthUser {
         req: &HttpRequest,
         _payload: &mut Payload,
     ) -> Self::Future {
-        let headers = req.headers().clone();
+
+        let req = req.clone();
 
         let ret = async move {
-            if let Some(user) = AuthUser::from_header(&headers).await {
+            if let Some(user) = AuthUser::from_request(&req).await {
                 Ok(user)
             } else {
                 Err(Error::from(ParseError::Header))

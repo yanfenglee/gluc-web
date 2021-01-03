@@ -5,7 +5,10 @@ use rbatis::crud::CRUDEnable;
 use rbatis::core::Error;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
-use crate::domain::vo::RespErr::SimpleError;
+use crate::base::resp::RespErr::SimpleError;
+use sailfish::TemplateOnce;
+use actix_http::http::StatusCode;
+use actix_http::error::InternalError;
 
 /// response struct
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -37,9 +40,9 @@ pub type Result<T> = std::result::Result<T, RespErr>;
 /// Basic usage:
 ///
 /// ```
-/// use gluc_web::domain::vo::resp;
-/// use gluc_web::domain::vo::RespErr::SimpleError;
-/// use gluc_web::domain::vo::RespErr::CodeError;
+/// use gluc_web::base::resp::resp;
+/// use gluc_web::base::resp::RespErr::SimpleError;
+/// use gluc_web::base::resp::RespErr::CodeError;
 ///
 /// #[derive(Serialize, Deserialize, Clone, Debug)]
 /// pub struct UserDTO {
@@ -65,10 +68,42 @@ pub fn resp<T>(arg: &Result<T>) -> Response where T: Serialize + DeserializeOwne
                 RespErr::SimpleError(e) => Resp { code: "1111".into(), msg: Some(e.clone()), data: None },
                 RespErr::CodeError(code, e) => Resp { code: code.clone(), msg: Some(e.clone()), data: None },
             }
-        },
+        }
     };
 
     let json_str = serde_json::to_string(&res).unwrap();
 
     HttpResponse::Ok().content_type("json").body(json_str)
+}
+
+pub fn resp_html<T>(arg: T) -> Response where T: TemplateOnce {
+    let ref res = match arg.render_once() {
+        Ok(body) => body,
+        Err(e) => e.to_string(),
+    };
+
+    HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(res)
+}
+
+#[cfg(test)]
+mod test {
+    use crate::view::index::Index;
+    use crate::base::resp::resp_html;
+
+    #[test]
+    fn test_html() {
+        let val = "4.5";
+        let delta = "0.3";
+        let direction = "flat";
+
+        let index = Index {
+            val,
+            delta,
+            direction,
+        };
+
+        println!("resp html {:?}", resp_html(index));
+    }
 }

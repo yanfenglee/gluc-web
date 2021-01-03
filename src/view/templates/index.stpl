@@ -1,0 +1,8 @@
+<html>
+  <body>
+    <h1>cgm</h1>
+        <%= val %>
+        <%= delta %>
+        <%= direction %>
+  </body>
+</html>

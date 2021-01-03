@@ -15,3 +15,5 @@ pub mod controller;
 pub mod service;
 pub mod config;
 pub mod middleware;
+pub mod view;
+pub mod base;

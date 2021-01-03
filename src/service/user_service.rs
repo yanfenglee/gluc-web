@@ -6,8 +6,8 @@ use crate::dao::RB;
 use crate::domain::dto::{UserDTO, UserLoginDTO, UserRegisterDTO, XDripCfgDTO};
 use actix_web::guard::Guard;
 use std::ops::Deref;
-use crate::domain::vo::RespErr::{SimpleError, CodeError};
-use crate::domain::vo::Result;
+use crate::base::resp::RespErr::{SimpleError, CodeError};
+use crate::base::resp::Result;
 use crate::domain::entity::User;
 use crate::util::hash;
 
