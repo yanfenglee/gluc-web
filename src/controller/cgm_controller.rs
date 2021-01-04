@@ -51,7 +51,7 @@ pub async fn get_current(user: Option<AuthUser>) -> impl Responder {
 
 #[py_sql(RB, "SELECT ROUND(sgv/18.0,1) sgv, ROUND(delta/18.0,1) delta, direction, date `time` \
     FROM cgm WHERE user_id = #{user_id} and sgv is not null order by `date` desc LIMIT 1")]
-fn select_one(user_id: i64) -> Option<Sgv> {}
+async fn select_one(user_id: i64) -> Option<Sgv> {}
 
 #[cfg(test)]
 mod test {
