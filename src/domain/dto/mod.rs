@@ -28,3 +28,11 @@ pub struct XDripCfgDTO {
     pub url: String,
     pub app_type: String,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Sgv {
+    pub sgv: String,
+    pub delta: f32,
+    pub direction: String,
+    pub time: i64,
+}

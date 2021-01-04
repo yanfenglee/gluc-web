@@ -2,17 +2,19 @@ use actix_web::{Responder, web, get, post};
 use chrono::NaiveDateTime;
 use rbatis::core::value::DateTimeNow;
 use serde::Deserialize;
+use chrono;
 
 use crate::base::resp::{resp, resp_html};
 use crate::service::USER_SERVICE;
 use crate::base::resp::Result;
 use crate::middleware::auth_user::AuthUser;
 use crate::middleware::auth;
-use crate::domain::dto::{UserRegisterDTO, UserLoginDTO};
+use crate::domain::dto::{UserRegisterDTO, UserLoginDTO, Sgv};
 use crate::view::index::Index;
 use crate::domain::entity::Cgm;
 use crate::dao::RB;
 use rbatis::crud::CRUD;
+use crate::util::arrow::ARROW;
 
 /// config route service
 pub fn config(cfg: &mut web::ServiceConfig) {
@@ -28,33 +30,42 @@ pub async fn get_current(user: Option<AuthUser>) -> impl Responder {
 
     let user_id = user.unwrap().user_id;
 
-    //
-    // #[py_sql(RB, "SELECT * FROM cgm WHERE user_id = #{user_id} order by `date` desc LIMIT 1")]
-    // fn select_entries(user_id: i64) -> Option<Cgm> {}
-    //
-    // let cgm = select_entries(user.unwrap().user_id).await.unwrap().unwrap();
-
-    let wrapper = RB.new_wrapper()
-        .eq("user_id", user_id)
-        .order_by(false, &[&"date"])
-        .check().unwrap();
-
-    if let Ok(cgm) = RB.fetch_by_wrapper::<Cgm>("", &wrapper).await {
+    return if let Ok(Some(rd)) = select_one(user_id).await {
+        let t = chrono::NaiveDateTime::from_timestamp(rd.time/1000, 0)
+            .format("%Y-%m-%d %H:%M:%S").to_string();
 
         let index = Index {
-            val: cgm.sgv.unwrap().to_string(),
-            delta: cgm.delta.unwrap().to_string(),
-            direction: cgm.direction.unwrap(),
+            bg: rd.sgv,
+            delta: rd.delta,
+            direction: ARROW.get(&rd.direction.as_str()).unwrap_or(&"").to_string(),
+            time: t,
         };
 
-        return resp_html(index);
+        resp_html(index)
     } else {
-
-        return resp_html(Index {
-            val: "".to_string(),
-            delta: "".to_string(),
-            direction: "".to_string()
-        });
+        resp_html(Index::default())
     }
 
 }
+
+
+#[py_sql(RB, "SELECT ROUND(sgv/18.0,1) sgv, ROUND(delta/18.0,1) delta, direction, date `time` \
+    FROM cgm WHERE user_id = #{user_id} and sgv is not null order by `date` desc LIMIT 1")]
+fn select_one(user_id: i64) -> Option<Sgv> {}
+
+#[cfg(test)]
+mod test {
+    use crate::controller::cgm_controller::select_one;
+    use crate::config::CONFIG;
+    use crate::dao::RB;
+
+    #[async_std::test]
+    async fn test_sql() {
+        fast_log::init_log("requests.log", 1000, log::Level::Info, None,true).unwrap();
+        RB.link(&CONFIG.mysql_url).await.unwrap();
+
+        let res = select_one(185675857577250816).await;
+        println!("res : {:?}", res)
+    }
+}
+

@@ -1,8 +1,12 @@
 <html>
   <body>
-    <h1>cgm</h1>
-        <%= val %>
-        <%= delta %>
-        <%= direction %>
+    <h1>血糖</h1>
+        最新：<%= bg %>
+        </br>
+        增量：<%= delta %>
+        </br>
+        趋势：<%= direction %>
+        </br>
+        时间：<%= time %>
   </body>
 </html>

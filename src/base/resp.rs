@@ -94,15 +94,8 @@ mod test {
 
     #[test]
     fn test_html() {
-        let val = "4.5".to_string();
-        let delta = "0.3".to_string();
-        let direction = "flat".to_string();
 
-        let index = Index {
-            val,
-            delta,
-            direction,
-        };
+        let index = Index::default();
 
         println!("resp html {:?}", resp_html(index));
     }
