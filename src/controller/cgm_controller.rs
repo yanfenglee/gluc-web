@@ -1,5 +1,5 @@
 use actix_web::{Responder, web, get, post};
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, TimeZone};
 use rbatis::core::value::DateTimeNow;
 use serde::Deserialize;
 use chrono;
@@ -15,6 +15,7 @@ use crate::domain::entity::Cgm;
 use crate::dao::RB;
 use rbatis::crud::CRUD;
 use crate::util::arrow::ARROW;
+use chrono::format::Fixed::TimezoneOffset;
 
 /// config route service
 pub fn config(cfg: &mut web::ServiceConfig) {
@@ -31,7 +32,7 @@ pub async fn get_current(user: Option<AuthUser>) -> impl Responder {
     let user_id = user.unwrap().user_id;
 
     return if let Ok(Some(rd)) = select_one(user_id).await {
-        let t = chrono::NaiveDateTime::from_timestamp(rd.time/1000, 0)
+        let t = chrono::Local.timestamp_millis(rd.time)
             .format("%Y-%m-%d %H:%M:%S").to_string();
 
         let index = Index {
