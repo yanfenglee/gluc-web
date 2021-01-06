@@ -9,6 +9,7 @@ use actix_http::error;
 use crate::middleware::auth_user::AuthUser;
 use std::cell::RefCell;
 use std::rc::Rc;
+use crate::base::resp::Resp;
 
 // There are two steps in middleware processing.
 // 1. Middleware initialization, middleware factory gets called with
@@ -74,7 +75,14 @@ impl<S, B> Service for MyAuthMiddleware<S>
                 }
             };
 
-            return Err(error::ErrorUnauthorized("auth failed!!!"));
+            let res = Resp {
+                code: "1001".to_string(),
+                msg: Some("账号未登录".to_string()),
+                data: Some("")
+            };
+
+            let json_str = serde_json::to_string(&res).unwrap();
+            return Err(error::ErrorUnauthorized(json_str));
         };
 
 
