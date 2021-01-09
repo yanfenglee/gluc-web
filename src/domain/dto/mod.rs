@@ -36,3 +36,9 @@ pub struct Sgv {
     pub direction: String,
     pub time: i64,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct VerifyCodeDTO {
+    pub phone: String,
+    pub nonce: String,
+}
