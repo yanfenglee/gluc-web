@@ -23,9 +23,9 @@ struct CacheItem<T> {
     pub ttl: i64,
 }
 
-pub fn setex<T>(key: &str, value: T, ttl: i64) -> Result<(), Box<dyn Error>> where T: Serialize + DeserializeOwned {
+pub fn setex<T>(key: &str, value: &T, ttl: i64) -> Result<(), Box<dyn Error>> where T: Serialize + DeserializeOwned + Clone {
     let item = CacheItem {
-        data: value,
+        data: value.clone(),
         ts: chrono::Utc::now().timestamp_millis(),
         ttl,
     };
@@ -37,11 +37,11 @@ pub fn setex<T>(key: &str, value: T, ttl: i64) -> Result<(), Box<dyn Error>> whe
     Ok(())
 }
 
-pub fn set<T>(key: &str, value: T) -> Result<(), Box<dyn Error>> where T: Serialize + DeserializeOwned {
+pub fn set<T>(key: &str, value: &T) -> Result<(), Box<dyn Error>> where T: Serialize + DeserializeOwned + Clone {
     setex(key, value, -1)
 }
 
-pub fn get<T>(key: &str) -> Option<T> where T: Serialize + DeserializeOwned {
+pub fn get<T>(key: &str) -> Option<T> where T: Serialize + DeserializeOwned + Clone {
     let cc = CACHE_STRING.lock().ok()?;
     let item_str = cc.get(&key.to_owned())?;
 
@@ -64,6 +64,7 @@ pub fn get<T>(key: &str) -> Option<T> where T: Serialize + DeserializeOwned {
 mod test {
     use crate::util::local_cache;
     use serde::{Serialize, Deserialize};
+    use std::time::Duration;
 
 
     #[test]
@@ -85,7 +86,7 @@ mod test {
 
     #[test]
     fn test() {
-        local_cache::set("aa", 3);
+        local_cache::set("aa", &3);
 
         assert_eq!(local_cache::get::<i32>("aa"), Some(3));
     }
@@ -105,9 +106,26 @@ mod test {
             password: Some("asdf".to_owned())
         };
 
-        local_cache::set("aa", user.clone());
+        local_cache::set("aa", &user);
 
         assert_eq!(local_cache::get::<UserTest>("aa"), Some(user));
+    }
+
+    #[test]
+    fn test3() {
+        let user = UserTest {
+            id: 10,
+            username: "111".to_string(),
+            password: Some("asdf".to_owned())
+        };
+
+        local_cache::setex("aa", &user, 3000);
+
+        assert_eq!(local_cache::get::<UserTest>("aa"), Some(user));
+
+        std::thread::sleep(Duration::from_secs(4));
+
+        assert_eq!(local_cache::get::<UserTest>("aa"), None);
     }
 }
 
