@@ -5,11 +5,6 @@ use serde::export::fmt::Display;
 use serde::de::DeserializeOwned;
 use std::error::Error;
 
-pub static CACHE_I64: Lazy<Mutex<HashMap<String, i64>>> = Lazy::new(|| {
-    let mut m = HashMap::new();
-    Mutex::new(m)
-});
-
 static CACHE_STRING: Lazy<Mutex<HashMap<String, String>>> = Lazy::new(|| {
     let mut m = HashMap::new();
     Mutex::new(m)
@@ -65,24 +60,6 @@ mod test {
     use crate::util::local_cache;
     use serde::{Serialize, Deserialize};
     use std::time::Duration;
-
-
-    #[test]
-    fn test_i64() {
-        if let Ok(mut cc) = local_cache::CACHE_I64.lock() {
-            for i in 0..10000 {
-                cc.insert(format!("key{}", i), i);
-            }
-        }
-
-        if let Ok(mut cc) = local_cache::CACHE_I64.lock() {
-            for i in 0..10000 {
-                if let Some(v) = cc.get(&format!("key{}", i)) {
-                    println!("{:?}", v);
-                }
-            }
-        }
-    }
 
     #[test]
     fn test() {

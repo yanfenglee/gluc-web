@@ -6,7 +6,7 @@ use actix_http::http::HeaderMap;
 use std::pin::Pin;
 use futures::{Future, FutureExt};
 
-use crate::util::local_cache::CACHE_I64;
+use crate::util::local_cache;
 use crate::dao::RB;
 use qstring::QString;
 
@@ -40,11 +40,10 @@ impl AuthUser {
 
     pub async fn from_token(token: &String) -> Option<Self> {
         /// get from local cache first
-        if let Ok(mut cc) = CACHE_I64.lock() {
-            if let Some(id) = cc.get(token) {
-                return Some(AuthUser { user_id: *id, token: token.clone() });
-            }
+        if let Some(id) = local_cache::get::<i64>(token) {
+            return Some(AuthUser { user_id: id, token: token.clone() });
         }
+
 
         /// get from db
         #[py_sql(RB, "SELECT id FROM user WHERE token = #{token} LIMIT 1")]
@@ -52,9 +51,7 @@ impl AuthUser {
 
         if let Ok(Some(id)) = select_id(&token).await {
             /// write cache
-            if let Ok(mut cc) = CACHE_I64.lock() {
-                cc.insert(token.clone(), id);
-            }
+            local_cache::set(token.as_str(), &id);
 
             log::info!("cache miss, get from db: {}", id);
 
