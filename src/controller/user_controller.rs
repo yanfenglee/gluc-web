@@ -16,7 +16,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         .service(register)
         .service(login)
     )
-        .service(web::scope("/")
+        .service(web::scope("/xdrip")
             .wrap(auth::UserAuth)
             .service(xdrip_config)
         );
@@ -39,7 +39,7 @@ pub async fn login(arg: web::Json<UserLoginDTO>) -> impl Responder {
     resp(&data)
 }
 
-#[get("/xdrip/config")]
+#[get("/config")]
 pub async fn xdrip_config(user: Option<AuthUser>) -> impl Responder {
     log::info!("query entries {:?}", user);
 
