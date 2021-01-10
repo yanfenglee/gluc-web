@@ -37,10 +37,10 @@ pub fn set<T>(key: &str, value: &T) -> Result<(), Box<dyn Error>> where T: Seria
 }
 
 pub fn get<T>(key: &str) -> Option<T> where T: Serialize + DeserializeOwned + Clone {
-    let cc = CACHE_STRING.lock().ok()?;
-    let item_str = cc.get(&key.to_owned())?;
+    let cache = CACHE_STRING.lock().ok()?;
+    let item_s = cache.get(&key.to_owned())?;
 
-    let item: CacheItem<T> = serde_json::from_str(item_str.as_str()).ok()?;
+    let item: CacheItem<T> = serde_json::from_str(item_s.as_str()).ok()?;
 
     if item.ttl <= 0 {
         return Some(item.data);
