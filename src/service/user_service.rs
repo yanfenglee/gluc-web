@@ -16,6 +16,14 @@ pub struct UserService {}
 
 impl UserService {
     pub async fn register(&self, arg: &UserRegisterDTO) -> Result<u64> {
+        let wrapper = RB.new_wrapper()
+            .eq("username", &arg.username)
+            .check()?;
+
+        if let Ok(user) = RB.fetch_by_wrapper::<User>("", &wrapper).await {
+            return Err(CodeError("3".into(), "用户名已经存在".into()));
+        }
+
         let user = User {
             id: rbatis::plugin::snowflake::block_snowflake_id(),
             username: arg.username.clone(),
@@ -62,7 +70,7 @@ impl UserService {
         let user = RB.fetch_by_wrapper::<User>("", &wrapper).await?;
 
         Ok(XDripCfgDTO {
-            url: format!("{}_{}", user.username, user.password.unwrap())
+            url: format!("https://{}_{}@gluc.cn/api/v1/", user.username, user.password.unwrap())
         })
     }
 }
