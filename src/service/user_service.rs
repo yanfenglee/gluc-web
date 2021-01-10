@@ -19,7 +19,7 @@ impl UserService {
         let user = User {
             id: rbatis::plugin::snowflake::block_snowflake_id(),
             username: arg.username.clone(),
-            password: Some(hash::sha1(&arg.password)),
+            password: Some(arg.password.clone()),
             nickname: arg.nickname.clone(),
             email: arg.email.clone(),
             phone: arg.phone.clone(),
@@ -32,12 +32,12 @@ impl UserService {
     }
 
     pub async fn login(&self, arg: &UserLoginDTO) -> Result<UserDTO> {
-        let hash_pass = hash::sha1(&arg.password);
+        //let hash_pass = hash::sha1(&arg.password);
 
         let wrapper = RB.new_wrapper()
-            .eq("username", arg.username.clone())
+            .eq("username", &arg.username)
             .and()
-            .eq("password", hash_pass)
+            .eq("password", &arg.password)
             .check()?;
 
         if let Ok(user) = RB.fetch_by_wrapper::<User>("", &wrapper).await {
@@ -53,6 +53,16 @@ impl UserService {
 
 
     pub async fn get_xdrip_cfg(&self, user_id: i64) -> Result<XDripCfgDTO> {
-        Err(SimpleError("not implement".to_string()))
+        // Err(SimpleError("not implement".to_string()))
+
+        let wrapper = RB.new_wrapper()
+            .eq("id", &user_id)
+            .check()?;
+
+        let user = RB.fetch_by_wrapper::<User>("", &wrapper).await?;
+
+        Ok(XDripCfgDTO {
+            url: format!("{}_{}", user.username, user.password.unwrap())
+        })
     }
 }

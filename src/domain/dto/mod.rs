@@ -26,7 +26,6 @@ pub struct UserRegisterDTO {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct XDripCfgDTO {
     pub url: String,
-    pub app_type: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
