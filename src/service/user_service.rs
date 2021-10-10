@@ -65,7 +65,8 @@ impl UserService {
         let user = RB.fetch_by_wrapper::<User>(wrapper).await?;
 
         Ok(XDripCfgDTO {
-            url: format!("https://{}_{}@gluc.cn/api/v1/", user.username, user.password.unwrap())
+            //url: format!("https://{}_{}@gluc.cn/api/v1/", user.username, user.password.unwrap())
+            url: format!("http://{}.@gluc.cn:9999/api/v1/", user.token)
         })
     }
 }

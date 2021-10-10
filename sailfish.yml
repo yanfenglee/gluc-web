@@ -1,6 +1,0 @@
-template_dir: "src/view/templates"
-escape: true
-delimiter: "%"
-
-optimization:
-  rm_whitespace: false
