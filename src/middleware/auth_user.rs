@@ -1,10 +1,11 @@
 use actix_web::{FromRequest, HttpRequest};
-use futures::future::{Ready, ok, err};
 use actix_http::{Payload, Error};
 use actix_http::error::ParseError;
 use actix_http::http::HeaderMap;
+use rbatis::py_sql;
+use rbatis::rbatis_sql::*;
 use std::pin::Pin;
-use futures::{Future, FutureExt};
+use futures::{Future};
 
 use crate::util::local_cache;
 use crate::dao::RB;
@@ -39,7 +40,7 @@ impl AuthUser {
     }
 
     pub async fn from_token(token: &String) -> Option<Self> {
-        /// get from local cache first
+        // get from local cache first
         if let Some(id) = local_cache::get::<i64>(token) {
             return Some(AuthUser { user_id: id, token: token.clone() });
         }
@@ -47,10 +48,10 @@ impl AuthUser {
 
         /// get from db
         #[py_sql(RB, "SELECT id FROM user WHERE token = #{token} LIMIT 1")]
-        async fn select_id(token: &String) -> Option<i64> {}
+        async fn select_id(token: &String) -> Option<i64> {todo!()}
 
         if let Ok(Some(id)) = select_id(&token).await {
-            /// write cache
+            // write cache
             local_cache::set(token.as_str(), &id);
 
             log::info!("cache miss, get from db: {}", id);

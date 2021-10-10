@@ -4,8 +4,7 @@
 
 #[macro_use]
 extern crate lazy_static;
-#[macro_use]
-extern crate rbatis_macro_driver;
+
 
 #[macro_use]
 pub mod util;
@@ -15,5 +14,4 @@ pub mod controller;
 pub mod service;
 pub mod config;
 pub mod middleware;
-pub mod view;
 pub mod base;

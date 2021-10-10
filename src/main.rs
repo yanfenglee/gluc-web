@@ -1,13 +1,8 @@
-use actix_web::{App, HttpRequest, HttpResponse, HttpServer, Responder, web, ResponseError, HttpMessage, Either};
+use actix_web::{App, HttpRequest, HttpResponse, HttpServer, Responder, web};
 
 use gluc_web::config::{log_config, CONFIG};
-use gluc_web::controller::{user_controller, cgm_controller};
+use gluc_web::controller::{user_controller};
 use gluc_web::dao::RB;
-use actix_http::http::Method;
-use actix_web::dev::{Service, ServiceResponse};
-use futures::FutureExt;
-use actix_http::{Error, Response};
-use gluc_web::middleware::auth;
 
 async fn index() -> impl Responder {
     HttpResponse::Ok().body("Hello cgm")
@@ -34,7 +29,6 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .route("/", web::get().to(index))
             .configure(user_controller::config)
-            .configure(cgm_controller::config)
             .default_service(web::route().to(default_proc)
             )
     })

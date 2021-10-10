@@ -1,9 +1,9 @@
 
-use rbatis::crud::CRUDEnable;
+use rbatis::{crud_table};
 use serde::{Deserialize, Serialize};
 
-
-#[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
+#[crud_table]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct User {
     pub id: i64,
     pub username: String,
@@ -14,7 +14,8 @@ pub struct User {
     pub token: String,
 }
 
-#[derive(CRUDEnable, Serialize, Deserialize, Clone, Debug)]
+#[crud_table]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Cgm {
     pub id: Option<i64>,
     pub user_id: Option<i64>,

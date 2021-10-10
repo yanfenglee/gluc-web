@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use crate::domain::entity::{User};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct UserDTO {

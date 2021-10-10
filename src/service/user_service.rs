@@ -1,12 +1,10 @@
-use chrono::NaiveDateTime;
+
 use rbatis::crud::CRUD;
-use rbatis::core::value::DateTimeNow;
 
 use crate::dao::RB;
 use crate::domain::dto::{UserDTO, UserLoginDTO, UserRegisterDTO, XDripCfgDTO};
-use actix_web::guard::Guard;
-use std::ops::Deref;
-use crate::base::resp::RespErr::{SimpleError, CodeError};
+
+use crate::base::resp::RespErr::{CodeError};
 use crate::base::resp::Result;
 use crate::domain::entity::User;
 use crate::util::hash;
@@ -17,15 +15,14 @@ pub struct UserService {}
 impl UserService {
     pub async fn register(&self, arg: &UserRegisterDTO) -> Result<u64> {
         let wrapper = RB.new_wrapper()
-            .eq("username", &arg.username)
-            .check()?;
+            .eq("username", &arg.username);
 
-        if let Ok(user) = RB.fetch_by_wrapper::<User>("", &wrapper).await {
+        if let Ok(user) = RB.fetch_by_wrapper::<User>(wrapper).await {
             return Err(CodeError("3".into(), "用户名已经存在".into()));
         }
 
         let user = User {
-            id: rbatis::plugin::snowflake::block_snowflake_id(),
+            id: rbatis::plugin::snowflake::new_snowflake_id(),
             username: arg.username.clone(),
             password: Some(arg.password.clone()),
             nickname: arg.nickname.clone(),
@@ -36,7 +33,7 @@ impl UserService {
 
         log::info!("register info: {:?}", user);
 
-        Ok(RB.save("", &user).await?.rows_affected)
+        Ok(RB.save(&user, &[]).await?.rows_affected)
     }
 
     pub async fn login(&self, arg: &UserLoginDTO) -> Result<UserDTO> {
@@ -45,10 +42,9 @@ impl UserService {
         let wrapper = RB.new_wrapper()
             .eq("username", &arg.username)
             .and()
-            .eq("password", &arg.password)
-            .check()?;
+            .eq("password", &arg.password);
 
-        if let Ok(user) = RB.fetch_by_wrapper::<User>("", &wrapper).await {
+        if let Ok(user) = RB.fetch_by_wrapper::<User>(wrapper).await {
             Ok(UserDTO {
                 token: user.token,
                 username: user.username,
@@ -64,10 +60,9 @@ impl UserService {
         // Err(SimpleError("not implement".to_string()))
 
         let wrapper = RB.new_wrapper()
-            .eq("id", &user_id)
-            .check()?;
+            .eq("id", &user_id);
 
-        let user = RB.fetch_by_wrapper::<User>("", &wrapper).await?;
+        let user = RB.fetch_by_wrapper::<User>(wrapper).await?;
 
         Ok(XDripCfgDTO {
             url: format!("https://{}_{}@gluc.cn/api/v1/", user.username, user.password.unwrap())

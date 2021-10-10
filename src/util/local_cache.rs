@@ -1,12 +1,11 @@
 use std::{sync::Mutex, collections::HashMap};
 use once_cell::sync::Lazy;
 use serde::{Serialize, Deserialize};
-use serde::export::fmt::Display;
 use serde::de::DeserializeOwned;
 use std::error::Error;
 
 static CACHE_STRING: Lazy<Mutex<HashMap<String, String>>> = Lazy::new(|| {
-    let mut m = HashMap::new();
+    let m = HashMap::new();
     Mutex::new(m)
 });
 

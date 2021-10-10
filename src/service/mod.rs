@@ -1,8 +1,6 @@
 use user_service::UserService;
 use sms_service::SmsService;
 
-use crate::config::CONFIG;
-
 mod user_service;
 mod sms_service;
 

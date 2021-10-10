@@ -1,14 +1,9 @@
 use actix_http::Response;
 use actix_web::HttpResponse;
-use chrono::NaiveDateTime;
-use rbatis::crud::CRUDEnable;
 use rbatis::core::Error;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 use crate::base::resp::RespErr::SimpleError;
-use sailfish::TemplateOnce;
-use actix_http::http::StatusCode;
-use actix_http::error::InternalError;
 
 /// response struct
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -76,27 +71,27 @@ pub fn resp<T>(arg: &Result<T>) -> Response where T: Serialize + DeserializeOwne
     HttpResponse::Ok().content_type("json").body(json_str)
 }
 
-pub fn resp_html<T>(arg: T) -> Response where T: TemplateOnce {
-    let ref res = match arg.render_once() {
-        Ok(body) => body,
-        Err(e) => e.to_string(),
-    };
+// pub fn resp_html<T>(arg: T) -> Response where T: TemplateOnce {
+//     let ref res = match arg.render_once() {
+//         Ok(body) => body,
+//         Err(e) => e.to_string(),
+//     };
 
-    HttpResponse::Ok()
-        .content_type("text/html; charset=utf-8")
-        .body(res)
-}
+//     HttpResponse::Ok()
+//         .content_type("text/html; charset=utf-8")
+//         .body(res)
+// }
 
 #[cfg(test)]
 mod test {
-    use crate::view::index::Index;
-    use crate::base::resp::resp_html;
+    // use crate::view::index::Index;
+    // use crate::base::resp::resp_html;
 
     #[test]
     fn test_html() {
 
-        let index = Index::default();
+        // let index = Index::default();
 
-        println!("resp html {:?}", resp_html(index));
+        // println!("resp html {:?}", resp_html(index));
     }
 }
