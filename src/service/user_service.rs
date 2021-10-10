@@ -66,7 +66,7 @@ impl UserService {
 
         Ok(XDripCfgDTO {
             //url: format!("https://{}_{}@gluc.cn/api/v1/", user.username, user.password.unwrap())
-            url: format!("http://{}.@gluc.cn:9999/api/v1/", user.token)
+            url: format!("http://{}.gluc.cn:9999/api/v1/", user.token)
         })
     }
 }
